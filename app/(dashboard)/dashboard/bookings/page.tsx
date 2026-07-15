@@ -31,9 +31,28 @@ export default function BookingManagerPage() {
   }, []);
 
   // SWR Hook calls
-  const { data: incomingRes } = useSWR("/store/bookings/incoming", bookingApi.getIncomingBookings);
-  const { data: activeRes } = useSWR("/store/bookings/active", bookingApi.getActiveBookings);
-  const { data: historyRes } = useSWR("/store/bookings/history", () => bookingApi.getBookingHistory(1, 100));
+  const { data: incomingRes, mutate: mutateIncoming } = useSWR("/store/bookings/incoming", bookingApi.getIncomingBookings);
+  const { data: activeRes, mutate: mutateActive } = useSWR("/store/bookings/active", bookingApi.getActiveBookings);
+  const { data: historyRes, mutate: mutateHistory } = useSWR("/store/bookings/history", () => bookingApi.getBookingHistory(1, 100));
+
+  const [confirming, setConfirming] = useState(false);
+
+  const handleConfirmStorage = async (bookingId: string) => {
+    if (!confirm("Confirm you have received all luggage items for this booking?")) return;
+    setConfirming(true);
+    try {
+      await bookingApi.confirmStored(bookingId, "");
+      mutateIncoming();
+      mutateActive();
+      mutateHistory();
+      setSelectedBookingId(null);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to confirm storage. Please try again.");
+    } finally {
+      setConfirming(false);
+    }
+  };
 
   const incomingList = incomingRes?.data?.bookings || [];
   const activeList = activeRes?.data?.bookings || [];
@@ -272,6 +291,18 @@ export default function BookingManagerPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Confirm Receipt & Store CTA */}
+              {selectedBooking.status === "at_store" && (
+                <button
+                  onClick={() => handleConfirmStorage(selectedBooking._id)}
+                  disabled={confirming}
+                  className="w-full py-4 bg-[#0D9488] hover:bg-[#0F766E] text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-teal-500/10 hover:shadow-teal-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none"
+                >
+                  <CheckCircle2 size={16} />
+                  {confirming ? "Confirming Receipt..." : "Confirm Receipt & Store"}
+                </button>
+              )}
             </>
           ) : (
             <div className="py-20 text-center text-slate-350 flex flex-col items-center justify-center">
