@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // Public paths (accessible without login)
-const publicPaths = ["/login", "/signup", "/Complete Profile"];
+const publicPaths = ["/login", "/signup", "/complete-profile", "/verify-otp"];
 
 // Regex routes
 const loginVerificationRegex = /^\/login\/verification\/[^/]+$/;
@@ -22,21 +22,23 @@ export function middleware(request: NextRequest) {
     (path === "/qr-code-generator" &&
       process.env.NEXT_PUBLIC_ENV_TYPE === "production");
 
-  /**
-   * ✅ USER IS AUTHENTICATED
-   */
   if (token) {
-    // Prevent access to login/signup after login
+    // Prevent access to login/signup/verify after login
     if (
+      path === "/" ||
       path === "/login" ||
       path === "/signup" ||
+      path === "/verify-otp" ||
       loginVerificationRegex.test(path) ||
       signupVerificationRegex.test(path)
     ) {
       return redirect("/dashboard", request);
     }
-
     return NextResponse.next();
+  }
+
+  if (path === "/") {
+    return redirect("/login", request);
   }
 
   if (!isPublicRoute) {
@@ -47,5 +49,6 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/dashboard","/users","/profile", "/login"],
+  matcher: ["/", "/dashboard/:path*", "/users", "/profile", "/login", "/signup", "/verify-otp", "/complete-profile"],
 };
+

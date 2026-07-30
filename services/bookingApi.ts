@@ -1,31 +1,44 @@
 import { apiClient } from "./authApi";
 
 export const bookingApi = {
+  
+  // GET INCOMING BOOKINGs
   getIncomingBookings: async () => {
     const res = await apiClient.get("/store/bookings/incoming");
     return res.data;
   },
   
+  // GET ACTIVE BOOKING
   getActiveBookings: async () => {
     const res = await apiClient.get("/store/bookings/active");
     return res.data;
   },
+
+  // GET RETURN BOOKING
+  getReturnBookings: async (page = 1, limit = 10) => {
+    const res = await apiClient.get(`/store/bookings/return_parcels?page=${page}&limit=${limit}`);
+    return res.data;
+  },
   
+  // GET BOOKING HISTORY
   getBookingHistory: async (page = 1, limit = 10) => {
     const res = await apiClient.get(`/store/bookings/history?page=${page}&limit=${limit}`);
     return res.data;
   },
   
+  // GET BOOKING BY ID
   getBookingDetail: async (bookingId: string) => {
     const res = await apiClient.get(`/store/bookings/${bookingId}`);
     return res.data;
   },
   
+  // GET BOOKING RECEIVED
   confirmStored: async (bookingId: string, otp: string) => {
     const res = await apiClient.post(`/store/bookings/${bookingId}/confirm-stored`, { otp });
     return res.data;
   },
   
+  // VERIFY RETURN BOOKING OTP
   verifyReturnOtp: async (bookingId: string, otp: string) => {
     const res = await apiClient.post(`/store/bookings/${bookingId}/verify-return-otp`, { otp });
     return res.data;

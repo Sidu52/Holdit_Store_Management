@@ -22,7 +22,6 @@ import { bookingApi } from "../../../../services/bookingApi";
 
 export default function BookingManagerPage() {
   const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<"incoming" | "active" | "history">("incoming");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
 
@@ -31,12 +30,7 @@ export default function BookingManagerPage() {
   }, []);
 
   // SWR Hook calls
-  const { data: incomingRes } = useSWR("/store/bookings/incoming", bookingApi.getIncomingBookings);
-  const { data: activeRes } = useSWR("/store/bookings/active", bookingApi.getActiveBookings);
   const { data: historyRes } = useSWR("/store/bookings/history", () => bookingApi.getBookingHistory(1, 100));
-
-  const incomingList = incomingRes?.data?.bookings || [];
-  const activeList = activeRes?.data?.bookings || [];
   const historyList = historyRes?.data?.bookings || [];
 
   if (!mounted) {
@@ -50,10 +44,7 @@ export default function BookingManagerPage() {
 
   // Filter list based on selected tab and search query
   const getFilteredList = () => {
-    let currentList = [];
-    if (activeTab === "incoming") currentList = incomingList;
-    else if (activeTab === "active") currentList = activeList;
-    else currentList = historyList;
+    let currentList = historyList;
 
     if (!searchQuery.trim()) return currentList;
 
@@ -69,7 +60,7 @@ export default function BookingManagerPage() {
   const filteredList = getFilteredList();
 
   // Find selected booking full details
-  const allBookings = [...incomingList, ...activeList, ...historyList];
+  const allBookings = [ ...historyList];
   const selectedBooking = allBookings.find(b => b._id === selectedBookingId);
 
   return (
@@ -84,34 +75,6 @@ export default function BookingManagerPage() {
 
       {/* Control Panel */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-3xl border border-slate-100 shadow-sm">
-        {/* Tabs */}
-        <div className="flex bg-slate-100 p-1.5 rounded-2xl w-fit">
-          <button
-            onClick={() => { setActiveTab("incoming"); setSelectedBookingId(null); }}
-            className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
-              activeTab === "incoming" ? "bg-white text-[#0D9488] shadow-sm" : "text-slate-500 hover:text-slate-800"
-            }`}
-          >
-            Incoming ({incomingList.length})
-          </button>
-          <button
-            onClick={() => { setActiveTab("active"); setSelectedBookingId(null); }}
-            className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
-              activeTab === "active" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-800"
-            }`}
-          >
-            Stored Vault ({activeList.length})
-          </button>
-          <button
-            onClick={() => { setActiveTab("history"); setSelectedBookingId(null); }}
-            className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
-              activeTab === "history" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-800"
-            }`}
-          >
-            Completed / History ({historyList.length})
-          </button>
-        </div>
-
         {/* Search Bar */}
         <div className="relative flex-1 max-w-md w-full">
           <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -151,9 +114,7 @@ export default function BookingManagerPage() {
                   }`}
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-                      activeTab === "incoming" ? "bg-teal-50 text-teal-650" : activeTab === "active" ? "bg-indigo-50 text-indigo-650" : "bg-slate-100 text-slate-550"
-                    }`}>
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center bg-slate-100 text-slate-550 `}>
                       <Package size={22} />
                     </div>
                     <div>

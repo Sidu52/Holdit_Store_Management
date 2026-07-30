@@ -160,7 +160,7 @@ export default function SupportPage() {
           </div>
 
           <div className="space-y-6">
-            <div className="flex items-start gap-4">
+            {/* <div className="flex items-start gap-4">
               <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-655 flex items-center justify-center flex-shrink-0">
                 <Phone size={20} />
               </div>
@@ -169,7 +169,7 @@ export default function SupportPage() {
                 <p className="font-black text-slate-700 text-sm mt-0.5">1800-419-8977</p>
                 <p className="text-[10px] text-slate-400 font-medium">Available Mon-Sun, 8 AM - 10 PM</p>
               </div>
-            </div>
+            </div> */}
 
             <div className="flex items-start gap-4">
               <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-655 flex items-center justify-center flex-shrink-0">
@@ -177,8 +177,8 @@ export default function SupportPage() {
               </div>
               <div>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Helpdesk Email</p>
-                <p className="font-black text-slate-700 text-sm mt-0.5">partners@holdit.com</p>
-                <p className="text-[10px] text-slate-400 font-medium">Typical response time within 2 hours</p>
+                <p className="font-black text-slate-700 text-sm mt-0.5">support@holdit.com</p>
+                <p className="text-[10px] text-slate-400 font-medium">Typical response time within 24 hours</p>
               </div>
             </div>
           </div>

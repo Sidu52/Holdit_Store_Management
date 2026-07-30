@@ -33,6 +33,21 @@ export default function VerifyOTPClient() {
     if (storedFlow) setAuthFlow(storedFlow);
     if (storedRole) setAuthRole(storedRole);
 
+    // Initialize or restore resend timer based on timestamp
+    const storedExpiry = sessionStorage.getItem("otp_timer_expiry");
+    const now = Date.now();
+    if (storedExpiry) {
+      const remainingSeconds = Math.max(0, Math.ceil((parseInt(storedExpiry, 10) - now) / 1000));
+      setResendTimer(remainingSeconds);
+      if (remainingSeconds === 0) {
+        sessionStorage.removeItem("otp_timer_expiry");
+      }
+    } else {
+      const newExpiry = now + 30000;
+      sessionStorage.setItem("otp_timer_expiry", newExpiry.toString());
+      setResendTimer(30);
+    }
+
     // Initial focus on first input
     if (inputRefs.current[0]) {
       inputRefs.current[0].focus();
@@ -43,7 +58,22 @@ export default function VerifyOTPClient() {
     let interval: NodeJS.Timeout;
     if (resendTimer > 0) {
       interval = setInterval(() => {
-        setResendTimer((prev) => prev - 1);
+        const storedExpiry = sessionStorage.getItem("otp_timer_expiry");
+        if (storedExpiry) {
+          const remaining = Math.max(0, Math.ceil((parseInt(storedExpiry, 10) - Date.now()) / 1000));
+          setResendTimer(remaining);
+          if (remaining === 0) {
+            sessionStorage.removeItem("otp_timer_expiry");
+          }
+        } else {
+          setResendTimer((prev) => {
+            if (prev <= 1) {
+              sessionStorage.removeItem("otp_timer_expiry");
+              return 0;
+            }
+            return prev - 1;
+          });
+        }
       }, 1000);
     }
     return () => clearInterval(interval);
@@ -62,7 +92,8 @@ export default function VerifyOTPClient() {
       
       toast.success("OTP Verified Successfully!");
       
-      // Mark as verified in frontend session
+      // Clear OTP timer and mark as verified in frontend session
+      sessionStorage.removeItem("otp_timer_expiry");
       sessionStorage.setItem("auth_verified", "true");
       
       if (authFlow === "signup") {
@@ -143,6 +174,8 @@ export default function VerifyOTPClient() {
       } else {
         await authApi.storeResendOTP(mobileNumber);
       }
+      const newExpiry = Date.now() + 30000;
+      sessionStorage.setItem("otp_timer_expiry", newExpiry.toString());
       setResendTimer(30);
       toast.success("OTP Resent!");
     } catch (error: any) {

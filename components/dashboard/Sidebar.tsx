@@ -4,11 +4,6 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
-  LayoutDashboard, 
-  User, 
-  History, 
-  LifeBuoy, 
-  Users, 
   PlusCircle,
   LogOut
 } from "lucide-react";
@@ -38,12 +33,7 @@ export default function Sidebar() {
 
   return (
     <aside className="w-64 h-screen bg-white border-r border-slate-200 flex flex-col sticky top-0">
-      <div className="p-6 flex items-center gap-2">
-        <div className="w-8 h-8 rounded-full bg-[#0D9488]" />
-        <span className="font-bold text-xl text-slate-800 tracking-tight">Holdit.</span>
-      </div>
-
-      <div className="px-6 mb-6">
+      <div className="px-6 my-6">
         <div className="bg-[#EAFBF6] p-3 rounded-xl flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-[#0D9488] flex items-center justify-center text-white font-bold">
             {user?.store_name?.charAt(0) || user?.first_name?.charAt(0) || "S"}

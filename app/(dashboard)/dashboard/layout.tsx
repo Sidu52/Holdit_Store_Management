@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Sidebar from "../../../components/dashboard/Sidebar";
 import { getServerUser } from "../../../lib/serverAuth";
 import { SWRProvider } from "../../../components/providers/SWRProvider";
+import Navbar from "@/components/dashboard/Navbar";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;

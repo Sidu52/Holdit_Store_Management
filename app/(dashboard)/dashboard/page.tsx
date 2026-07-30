@@ -1,5 +1,6 @@
 import React from "react";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import OwnerDashboard from "./OwnerDashboard";
 import StaffDashboard from "./StaffDashboard";
 import { getServerUser, fetchServerData } from "../../../lib/serverAuth";

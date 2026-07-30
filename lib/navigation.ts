@@ -42,10 +42,16 @@ export const NAVIGATION_ITEMS = [
     roles: ["store_owner"]
   },
   {
+    name: "Past Booking",
+    href: "/dashboard/booking_history",
+    icon: History,
+    roles: ["store"]
+  },
+  {
     name: "Booking Manager",
     href: "/dashboard/bookings",
     icon: History,
-    roles: ["store_owner", "store"]
+    roles: ["store_owner"]
   },
   {
     name: "Profile",

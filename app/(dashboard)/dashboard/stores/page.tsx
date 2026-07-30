@@ -2,24 +2,27 @@
 
 import React, { useState } from "react";
 import useSWR from "swr";
-import { 
-  Plus, 
-  Store as StoreIcon, 
-  MapPin, 
-  Phone, 
-  Clock, 
-  Power, 
-  Trash2, 
-  X, 
+import {
+  Plus,
+  Store as StoreIcon,
+  MapPin,
+  Phone,
+  Clock,
+  Power,
+  Trash2,
+  X,
   AlertTriangle,
   CheckCircle2,
   ChevronRight,
-  Sparkles
+  Sparkles,
 } from "lucide-react";
 import { bookingApi } from "../../../../services/bookingApi";
 
 export default function StoreManagementPage() {
-  const { data: storesRes, mutate } = useSWR("/store-owner/stores", bookingApi.getStores);
+  const { data: storesRes, mutate } = useSWR(
+    "/store-owner/stores",
+    bookingApi.getStores,
+  );
   const stores = storesRes?.data?.stores || [];
 
   // Modal State
@@ -38,32 +41,47 @@ export default function StoreManagementPage() {
     store_close_time: "22:00",
     latitude: 12.9716, // Default Bangalore coordinates
     longitude: 77.5946,
-    address: ""
+    address: "",
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleToggleOnline = async (storeId: string, currentStatus: boolean) => {
+  const handleToggleOnline = async (
+    storeId: string,
+    currentStatus: boolean,
+  ) => {
     try {
       await bookingApi.toggleStoreOnline(storeId, !currentStatus);
       mutate();
     } catch (err: any) {
-      alert(err.response?.data?.message || "Failed to update online status. Ensure store is active and verified.");
+      alert(
+        err.response?.data?.message ||
+          "Failed to update online status. Ensure store is active and verified.",
+      );
     }
   };
 
   const handleDeleteStore = async (storeId: string) => {
-    if (!confirm("Are you sure you want to deactivate this store outlet? This action will set the status to inactive.")) {
+    if (
+      !confirm(
+        "Are you sure you want to deactivate this store outlet? This action will set the status to inactive.",
+      )
+    ) {
       return;
     }
     try {
       await bookingApi.deleteStore(storeId);
       mutate();
     } catch (err: any) {
-      alert(err.response?.data?.message || "Failed to deactivate store. Ensure store is offline and has no active bookings.");
+      alert(
+        err.response?.data?.message ||
+          "Failed to deactivate store. Ensure store is offline and has no active bookings.",
+      );
     }
   };
 
@@ -84,14 +102,16 @@ export default function StoreManagementPage() {
         location: {
           type: "Point",
           coordinates: [Number(formData.longitude), Number(formData.latitude)],
-          address: formData.address
-        }
+          address: formData.address,
+        },
       };
 
       await bookingApi.createStore(payload);
-      setSuccessMsg("Store location created successfully! Pending admin approval.");
+      setSuccessMsg(
+        "Store location created successfully! Pending admin approval.",
+      );
       mutate();
-      
+
       setTimeout(() => {
         setIsAddModalOpen(false);
         setFormData({
@@ -103,13 +123,15 @@ export default function StoreManagementPage() {
           store_close_time: "22:00",
           latitude: 12.9716,
           longitude: 77.5946,
-          address: ""
+          address: "",
         });
         setSuccessMsg("");
       }, 2000);
-
     } catch (err: any) {
-      setErrorMsg(err.response?.data?.message || "Failed to create store. Please check the coordinates and phone number.");
+      setErrorMsg(
+        err.response?.data?.message ||
+          "Failed to create store. Please check the coordinates and phone number.",
+      );
     } finally {
       setLoading(false);
     }
@@ -120,16 +142,16 @@ export default function StoreManagementPage() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setFormData(prev => ({
+          setFormData((prev) => ({
             ...prev,
             latitude: Number(position.coords.latitude.toFixed(6)),
             longitude: Number(position.coords.longitude.toFixed(6)),
-            address: prev.address || "Current Locator Location"
+            address: prev.address || "Current Locator Location",
           }));
         },
         () => {
           alert("Unable to retrieve location. Defaulting coordinates.");
-        }
+        },
       );
     } else {
       alert("Geolocation is not supported by your browser.");
@@ -141,8 +163,13 @@ export default function StoreManagementPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-slate-800 tracking-tight">Store Management</h1>
-          <p className="text-slate-500 font-medium mt-1">Add, update, toggle and deactivate your luggage vault business locations.</p>
+          <h1 className="text-3xl font-black text-slate-800 tracking-tight">
+            Store Management
+          </h1>
+          <p className="text-slate-500 font-medium mt-1">
+            Add, update, toggle and deactivate your luggage vault business
+            locations.
+          </p>
         </div>
         <button
           onClick={() => setIsAddModalOpen(true)}
@@ -159,8 +186,13 @@ export default function StoreManagementPage() {
           <div className="w-16 h-16 rounded-2xl bg-teal-50 text-teal-655 flex items-center justify-center mb-4">
             <StoreIcon size={32} />
           </div>
-          <h3 className="text-xl font-bold text-slate-800">No stores created yet</h3>
-          <p className="text-slate-400 text-sm mt-1 max-w-md">Get started by creating your very first luggage storage point. All stores require backend validation before receiving customers.</p>
+          <h3 className="text-xl font-bold text-slate-800">
+            No stores created yet
+          </h3>
+          <p className="text-slate-400 text-sm mt-1 max-w-md">
+            Get started by creating your very first luggage storage point. All
+            stores require backend validation before receiving customers.
+          </p>
           <button
             onClick={() => setIsAddModalOpen(true)}
             className="mt-6 px-6 py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl transition-colors"
@@ -172,21 +204,17 @@ export default function StoreManagementPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {stores.map((store: any) => {
             const isVerified = store.verification_status === "verified";
-            const isActive = store.is_active;
-
             return (
-              <div 
-                key={store._id} 
-                className={`bg-white rounded-[2rem] border shadow-sm overflow-hidden flex flex-col transition-all duration-300 hover:shadow-md ${
-                  !isActive ? "border-slate-100 opacity-60" : "border-slate-100 hover:border-slate-200"
-                }`}
+              <div
+                key={store._id}
+                className={`bg-white rounded-[2rem] border shadow-sm overflow-hidden flex flex-col transition-all duration-300 hover:shadow-md "border-slate-100 hover:border-slate-200`}
               >
                 {/* Store Banner Ribbon */}
                 <div className="p-6 pb-4 border-b border-slate-50 flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                      isActive ? "bg-teal-50 text-teal-650" : "bg-slate-100 text-slate-400"
-                    }`}>
+                    <div
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center bg-slate-100 text-slate-400`}
+                    >
                       <StoreIcon size={20} />
                     </div>
                     <div>
@@ -194,7 +222,8 @@ export default function StoreManagementPage() {
                         {store.store_name}
                       </h4>
                       <p className="text-xs text-slate-400 font-bold tracking-wider uppercase mt-0.5">
-                        Capacity: {store.current_booking_count || 0} / {store.max_booking_capacity || 100}
+                        Capacity: {store.current_booking_count || 0} /{" "}
+                        {store.max_booking_capacity || 100}
                       </p>
                     </div>
                   </div>
@@ -210,7 +239,10 @@ export default function StoreManagementPage() {
                 {/* Info List */}
                 <div className="p-6 space-y-4 flex-1">
                   <div className="flex items-start gap-3 text-sm">
-                    <MapPin size={18} className="text-slate-400 flex-shrink-0 mt-0.5" />
+                    <MapPin
+                      size={18}
+                      className="text-slate-400 flex-shrink-0 mt-0.5"
+                    />
                     <p className="text-slate-600 font-medium">
                       {store.location?.address || "Address not configured"}
                     </p>
@@ -218,7 +250,9 @@ export default function StoreManagementPage() {
 
                   <div className="flex items-center gap-3 text-sm">
                     <Phone size={18} className="text-slate-400" />
-                    <span className="text-slate-600 font-bold">{store.phone}</span>
+                    <span className="text-slate-600 font-bold">
+                      {store.phone}
+                    </span>
                   </div>
 
                   <div className="flex items-center gap-3 text-sm">
@@ -230,22 +264,16 @@ export default function StoreManagementPage() {
 
                   {/* Status Badges */}
                   <div className="flex flex-wrap items-center gap-2 pt-2">
-                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${
-                      store.verification_status === "verified"
-                        ? "bg-teal-50 text-teal-700 border border-teal-100"
-                        : store.verification_status === "pending"
-                        ? "bg-amber-50 text-amber-700 border border-amber-100"
-                        : "bg-rose-50 text-rose-700 border border-rose-100"
-                    }`}>
+                    <span
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${
+                        store.verification_status === "verified"
+                          ? "bg-teal-50 text-teal-700 border border-teal-100"
+                          : store.verification_status === "pending"
+                            ? "bg-amber-50 text-amber-700 border border-amber-100"
+                            : "bg-rose-50 text-rose-700 border border-rose-100"
+                      }`}
+                    >
                       {store.verification_status}
-                    </span>
-
-                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${
-                      store.is_active
-                        ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
-                        : "bg-slate-100 text-slate-500 border border-slate-200"
-                    }`}>
-                      {store.is_active ? "Active" : "Inactive"}
                     </span>
                   </div>
                 </div>
@@ -254,28 +282,19 @@ export default function StoreManagementPage() {
                 <div className="bg-slate-50/50 p-6 border-t border-slate-50 flex items-center justify-between gap-4">
                   {/* Toggle Online */}
                   <button
-                    disabled={!isActive || !isVerified}
-                    onClick={() => handleToggleOnline(store._id, store.is_online)}
+                    disabled={!isVerified}
+                    onClick={() =>
+                      handleToggleOnline(store._id, store.is_online)
+                    }
                     className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
                       store.is_online
-                        ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
-                        : "bg-slate-100 text-slate-650 hover:bg-slate-200"
-                    } ${(!isActive || !isVerified) && "opacity-50 cursor-not-allowed"}`}
+                        ? "text-emerald-100 bg-emerald-800 hover:bg-emerald-500"
+                        : "hover:bg-emerald-100 text-emerald-800 bg-slate-200"
+                    } ${!isVerified && "opacity-50 cursor-not-allowed"}`}
                   >
                     <Power size={14} />
-                    {store.is_online ? "Go Offline" : "Go Online"}
+                    {!store.is_online ? "Offline" : "Online"}
                   </button>
-
-                  {/* Deactivate Button */}
-                  {isActive && (
-                    <button
-                      onClick={() => handleDeleteStore(store._id)}
-                      className="p-2.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
-                      title="Deactivate Store Location"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  )}
                 </div>
               </div>
             );
@@ -294,8 +313,12 @@ export default function StoreManagementPage() {
                   <Sparkles size={20} />
                 </div>
                 <div>
-                  <h3 className="text-lg font-black text-slate-800 tracking-tight">Create Store Vault</h3>
-                  <p className="text-slate-400 text-xs font-medium">Add a new commercial storage outlet to your network.</p>
+                  <h3 className="text-lg font-black text-slate-800 tracking-tight">
+                    Create Store Vault
+                  </h3>
+                  <p className="text-slate-400 text-xs font-medium">
+                    Add a new commercial storage outlet to your network.
+                  </p>
                 </div>
               </div>
               <button
@@ -307,7 +330,10 @@ export default function StoreManagementPage() {
             </div>
 
             {/* Modal Form */}
-            <form onSubmit={handleAddStoreSubmit} className="p-8 space-y-6 overflow-y-auto max-h-[75vh]">
+            <form
+              onSubmit={handleAddStoreSubmit}
+              className="p-8 space-y-6 overflow-y-auto max-h-[75vh]"
+            >
               {errorMsg && (
                 <div className="p-4 bg-rose-50 text-rose-700 text-sm font-bold rounded-2xl flex items-center gap-2 border border-rose-100">
                   <AlertTriangle size={18} className="flex-shrink-0" />
@@ -324,7 +350,9 @@ export default function StoreManagementPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Store Outlet Name</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                    Store Outlet Name
+                  </label>
                   <input
                     type="text"
                     name="store_name"
@@ -337,7 +365,9 @@ export default function StoreManagementPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Internal Login Phone</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                    Internal Login Phone
+                  </label>
                   <input
                     type="tel"
                     name="phone"
@@ -351,7 +381,9 @@ export default function StoreManagementPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Contact Number for Customers</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                  Contact Number for Customers
+                </label>
                 <input
                   type="tel"
                   name="store_contact_number"
@@ -364,7 +396,9 @@ export default function StoreManagementPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Store Description / Directions</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                  Store Description / Directions
+                </label>
                 <textarea
                   name="store_description"
                   rows={2}
@@ -377,7 +411,9 @@ export default function StoreManagementPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Opening Time</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                    Opening Time
+                  </label>
                   <input
                     type="time"
                     name="store_open_time"
@@ -389,7 +425,9 @@ export default function StoreManagementPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Closing Time</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                    Closing Time
+                  </label>
                   <input
                     type="time"
                     name="store_close_time"
@@ -404,7 +442,9 @@ export default function StoreManagementPage() {
               {/* Coordinates Section */}
               <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-black text-slate-650 uppercase tracking-wider">Geographic Service Location</h4>
+                  <h4 className="text-xs font-black text-slate-650 uppercase tracking-wider">
+                    Geographic Service Location
+                  </h4>
                   <button
                     type="button"
                     onClick={handleUseCurrentLocation}
@@ -416,7 +456,9 @@ export default function StoreManagementPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Latitude</label>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">
+                      Latitude
+                    </label>
                     <input
                       type="number"
                       step="any"
@@ -429,7 +471,9 @@ export default function StoreManagementPage() {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Longitude</label>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">
+                      Longitude
+                    </label>
                     <input
                       type="number"
                       step="any"
@@ -443,7 +487,9 @@ export default function StoreManagementPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Physical Address</label>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">
+                    Physical Address
+                  </label>
                   <input
                     type="text"
                     name="address"
