@@ -20,7 +20,11 @@ export async function fetchServerData<T = any>(endpoint: string, options: Reques
   const token = await getServerToken();
   if (!token) return null;
 
-  let baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+  let baseURL = process.env.NEXT_PUBLIC_API_URL;
+  // If the API_URL is not set, assume it's a local dev environment
+  if (!baseURL) {
+    return null;
+  };
   if (!baseURL.endsWith("/api/v1") && !baseURL.includes("/api/v1")) {
     baseURL = `${baseURL.replace(/\/$/, "")}/api/v1`;
   }
