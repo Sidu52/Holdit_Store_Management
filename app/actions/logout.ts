@@ -11,7 +11,8 @@ export async function serverLogout(role: string) {
   const token = cookieStore.get("accessToken")?.value;
   
   if (token) {
-    const baseURL = process.env.NEXT_PUBLIC_API_URL;
+    const backendOrigin = process.env.BACKEND_URL || "http://localhost:5000";
+    const baseURL = process.env.NEXT_PUBLIC_API_URL || `${backendOrigin}/api/v1`;
     const logoutEndpoint = role === "store_owner" 
       ? "/store-owner/auth/logout" 
       : "/store/auth/logout";

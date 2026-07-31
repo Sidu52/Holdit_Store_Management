@@ -1,11 +1,16 @@
 export const fetcher = async (url: string, options: RequestInit = {}) => {
-  const baseURL = process.env.NEXT_PUBLIC_API_URL;
+  // On the client, always use the relative proxy path so cookies stay on the same domain.
+  const baseURL =
+    typeof window !== "undefined"
+      ? "/api/v1"
+      : process.env.NEXT_PUBLIC_API_URL || "/api/v1";
 
   // Clean url if it starts with a slash
   const endpoint = url.startsWith("/") ? url : `/${url}`;
 
   const response = await fetch(`${baseURL}${endpoint}`, {
     ...options,
+    credentials: "include", // Needed for httpOnly cookies
     headers: {
       "Content-Type": "application/json",
       ...options.headers,

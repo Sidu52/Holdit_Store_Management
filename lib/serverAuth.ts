@@ -20,12 +20,11 @@ export async function fetchServerData<T = any>(endpoint: string, options: Reques
   const token = await getServerToken();
   if (!token) return null;
 
-  let baseURL = process.env.NEXT_PUBLIC_API_URL;
-  // If the API_URL is not set, assume it's a local dev environment
-  if (!baseURL) {
-    return null;
-  };
-  if (!baseURL.endsWith("/api/v1") && !baseURL.includes("/api/v1")) {
+  // For server-side fetches, use the internal backend URL (same one the rewrite proxy uses).
+  // Falls back to NEXT_PUBLIC_API_URL for backwards compatibility with local dev.
+  const backendOrigin = process.env.BACKEND_URL || "http://localhost:5000";
+  let baseURL = process.env.NEXT_PUBLIC_API_URL || `${backendOrigin}/api/v1`;
+  if (!baseURL.includes("/api/v1")) {
     baseURL = `${baseURL.replace(/\/$/, "")}/api/v1`;
   }
   const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;

@@ -1,6 +1,11 @@
 import axios from "axios";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
+// On the client, always use the relative proxy path so cookies stay on the same domain.
+// On the server (SSR), use the explicit env var if available.
+const API_BASE_URL =
+  typeof window !== "undefined"
+    ? "/api/v1"
+    : process.env.NEXT_PUBLIC_API_URL || "/api/v1";
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -49,8 +54,12 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Call backend POST /refresh to issue new tokens (cookies stored automatically)
-        await apiClient.post("/refresh");
+        // Determine the correct role-specific refresh endpoint from the failing request
+        const isOwnerRequest = originalRequest.url?.includes("/store-owner/");
+        const refreshPath = isOwnerRequest
+          ? "/store-owner/auth/refresh"
+          : "/store/auth/refresh";
+        await apiClient.post(refreshPath);
         processQueue(null);
         return apiClient(originalRequest);
       } catch (refreshError) {
