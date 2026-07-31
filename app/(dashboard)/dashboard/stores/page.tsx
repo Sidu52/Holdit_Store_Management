@@ -10,6 +10,7 @@ import {
   Clock,
   Power,
   Trash2,
+  Edit3,
   X,
   AlertTriangle,
   CheckCircle2,
@@ -27,11 +28,13 @@ export default function StoreManagementPage() {
 
   // Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingStoreId, setEditingStoreId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Form State
+  // Add Form State
   const [formData, setFormData] = useState({
     store_name: "",
     phone: "",
@@ -44,11 +47,108 @@ export default function StoreManagementPage() {
     address: "",
   });
 
+  // Edit Form State
+  const [editFormData, setEditFormData] = useState({
+    store_name: "",
+    store_contact_number: "",
+    store_description: "",
+    store_open_time: "08:00",
+    store_close_time: "22:00",
+    latitude: 12.9716,
+    longitude: 77.5946,
+    address: "",
+  });
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleEditInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value } = e.target;
+    setEditFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleOpenEditModal = (store: any) => {
+    setEditingStoreId(store._id);
+    setErrorMsg("");
+    setSuccessMsg("");
+    const lng = store.location?.coordinates?.[0] ?? 77.5946;
+    const lat = store.location?.coordinates?.[1] ?? 12.9716;
+    setEditFormData({
+      store_name: store.store_name || "",
+      store_contact_number: store.store_contact_number || store.phone || "",
+      store_description: store.store_description || "",
+      store_open_time: store.store_open_time || "08:00",
+      store_close_time: store.store_close_time || "22:00",
+      latitude: lat,
+      longitude: lng,
+      address: store.location?.address || "",
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditStoreSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingStoreId) return;
+    setErrorMsg("");
+    setSuccessMsg("");
+    setLoading(true);
+
+    try {
+      const payload = {
+        store_name: editFormData.store_name,
+        store_description: editFormData.store_description,
+        store_contact_number: editFormData.store_contact_number,
+        store_open_time: editFormData.store_open_time,
+        store_close_time: editFormData.store_close_time,
+        location: {
+          type: "Point",
+          coordinates: [Number(editFormData.longitude), Number(editFormData.latitude)],
+          address: editFormData.address,
+        },
+      };
+
+      await bookingApi.updateStore(editingStoreId, payload);
+      setSuccessMsg("Store outlet details updated successfully!");
+      mutate();
+
+      setTimeout(() => {
+        setIsEditModalOpen(false);
+        setEditingStoreId(null);
+        setSuccessMsg("");
+      }, 1500);
+    } catch (err: any) {
+      setErrorMsg(
+        err.response?.data?.message || "Failed to update store details.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUseEditCurrentLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setEditFormData((prev) => ({
+            ...prev,
+            latitude: Number(position.coords.latitude.toFixed(6)),
+            longitude: Number(position.coords.longitude.toFixed(6)),
+            address: prev.address || "Current Locator Location",
+          }));
+        },
+        () => {
+          alert("Unable to retrieve location. Defaulting coordinates.");
+        },
+      );
+    } else {
+      alert("Geolocation is not supported by your browser.");
+    }
   };
 
   const handleToggleOnline = async (
@@ -279,14 +379,14 @@ export default function StoreManagementPage() {
                 </div>
 
                 {/* Actions Bar */}
-                <div className="bg-slate-50/50 p-6 border-t border-slate-50 flex items-center justify-between gap-4">
+                <div className="bg-slate-50/50 p-6 border-t border-slate-50 flex items-center justify-between gap-3">
                   {/* Toggle Online */}
                   <button
                     disabled={!isVerified}
                     onClick={() =>
                       handleToggleOnline(store._id, store.is_online)
                     }
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
                       store.is_online
                         ? "text-emerald-100 bg-emerald-800 hover:bg-emerald-500"
                         : "hover:bg-emerald-100 text-emerald-800 bg-slate-200"
@@ -295,6 +395,26 @@ export default function StoreManagementPage() {
                     <Power size={14} />
                     {!store.is_online ? "Offline" : "Online"}
                   </button>
+
+                  <div className="flex items-center gap-2">
+                    {/* Edit Store Button */}
+                    <button
+                      onClick={() => handleOpenEditModal(store)}
+                      className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-teal-50 hover:bg-teal-100 text-[#0D9488] transition-all"
+                    >
+                      <Edit3 size={14} />
+                      Edit
+                    </button>
+
+                    {/* Delete Store Button */}
+                    <button
+                      onClick={() => handleDeleteStore(store._id)}
+                      className="p-2.5 rounded-xl text-xs font-bold text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all"
+                      title="Deactivate Store Outlet"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -517,6 +637,212 @@ export default function StoreManagementPage() {
                   className="px-6 py-3 bg-[#0D9488] hover:bg-[#0b7d73] text-white font-bold rounded-xl text-sm transition-colors shadow-lg shadow-[#0D9488]/10 disabled:opacity-55"
                 >
                   {loading ? "Creating..." : "Create Outlet"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Glassmorphic Edit Store Modal */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-xl rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+            {/* Modal Header */}
+            <div className="p-8 pb-4 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-655 flex items-center justify-center">
+                  <Edit3 size={20} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-slate-800 tracking-tight">
+                    Edit Store Details
+                  </h3>
+                  <p className="text-slate-400 text-xs font-medium">
+                    Update outlet operating hours, location or contact information.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className="p-2 text-slate-400 hover:text-slate-655 hover:bg-slate-100 rounded-full transition-all"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form
+              onSubmit={handleEditStoreSubmit}
+              className="p-8 space-y-6 overflow-y-auto max-h-[75vh]"
+            >
+              {errorMsg && (
+                <div className="p-4 bg-rose-50 text-rose-700 text-sm font-bold rounded-2xl flex items-center gap-2 border border-rose-100">
+                  <AlertTriangle size={18} className="flex-shrink-0" />
+                  <span>{errorMsg}</span>
+                </div>
+              )}
+
+              {successMsg && (
+                <div className="p-4 bg-teal-50 text-teal-700 text-sm font-bold rounded-2xl flex items-center gap-2 border border-teal-100">
+                  <CheckCircle2 size={18} className="flex-shrink-0" />
+                  <span>{successMsg}</span>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                    Store Outlet Name
+                  </label>
+                  <input
+                    type="text"
+                    name="store_name"
+                    required
+                    value={editFormData.store_name}
+                    onChange={handleEditInputChange}
+                    placeholder="e.g. Airport Terminal 3 Vault"
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#0D9488] font-bold text-slate-700 placeholder-slate-350"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                    Contact Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    name="store_contact_number"
+                    value={editFormData.store_contact_number}
+                    onChange={handleEditInputChange}
+                    placeholder="e.g. +919876543211"
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#0D9488] font-bold text-slate-700 placeholder-slate-350"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                  Store Description / Directions
+                </label>
+                <textarea
+                  name="store_description"
+                  rows={2}
+                  value={editFormData.store_description}
+                  onChange={handleEditInputChange}
+                  placeholder="Describe your storage room location, security measures, or drop-off guidelines..."
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#0D9488] font-medium text-slate-700 placeholder-slate-350"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                    Opening Time
+                  </label>
+                  <input
+                    type="time"
+                    name="store_open_time"
+                    required
+                    value={editFormData.store_open_time}
+                    onChange={handleEditInputChange}
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#0D9488] font-bold text-slate-700"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                    Closing Time
+                  </label>
+                  <input
+                    type="time"
+                    name="store_close_time"
+                    required
+                    value={editFormData.store_close_time}
+                    onChange={handleEditInputChange}
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#0D9488] font-bold text-slate-700"
+                  />
+                </div>
+              </div>
+
+              {/* Coordinates Section */}
+              <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-black text-slate-650 uppercase tracking-wider">
+                    Geographic Service Location
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={handleUseEditCurrentLocation}
+                    className="text-xs text-[#0D9488] font-black hover:underline"
+                  >
+                    Locate Me
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">
+                      Latitude
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      name="latitude"
+                      required
+                      value={editFormData.latitude}
+                      onChange={handleEditInputChange}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-[#0D9488] font-bold text-slate-700"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">
+                      Longitude
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      name="longitude"
+                      required
+                      value={editFormData.longitude}
+                      onChange={handleEditInputChange}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-[#0D9488] font-bold text-slate-700"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">
+                    Physical Address
+                  </label>
+                  <input
+                    type="text"
+                    name="address"
+                    required
+                    value={editFormData.address}
+                    onChange={handleEditInputChange}
+                    placeholder="Enter full address of the store outlet"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-[#0D9488] font-bold text-slate-700 placeholder-slate-350"
+                  />
+                </div>
+              </div>
+
+              {/* Submit Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-50">
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="px-5 py-3 border border-slate-200 hover:bg-slate-50 text-slate-650 font-bold rounded-xl text-sm transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-6 py-3 bg-[#0D9488] hover:bg-[#0b7d73] text-white font-bold rounded-xl text-sm transition-colors shadow-lg shadow-[#0D9488]/10 disabled:opacity-55"
+                >
+                  {loading ? "Updating..." : "Save Changes"}
                 </button>
               </div>
             </form>
