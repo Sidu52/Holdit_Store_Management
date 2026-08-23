@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import useSWR from "swr";
-import { bookingApi } from "../../../../services/bookingApi";
-import BookingCard from "../../../../components/models/BookingCard";
-import BookingDetailDrawer from "../../../../components/models/BookingDetailDrawer";
-import { Booking } from "../../../../types/booking";
+import { bookingApi } from "@/services/bookingApi";
+import BookingCard from "@/components/models/BookingCard";
+import BookingDetailDrawer from "@/components/models/BookingDetailDrawer";
+import { Booking } from "@/types/booking";
 import { Vault } from "lucide-react";
 
 export default function InventoryVaultPage() {

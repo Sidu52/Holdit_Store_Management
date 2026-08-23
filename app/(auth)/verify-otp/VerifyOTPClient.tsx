@@ -13,6 +13,7 @@ export default function VerifyOTPClient() {
   const [mobileNumber, setMobileNumber] = useState<string>("");
   const [authFlow, setAuthFlow] = useState<string>("login");
   const [authRole, setAuthRole] = useState<"store" | "store_owner" | "">("");
+  const [devOtp, setDevOtp] = useState<string>("");
   const [otp, setOtp] = useState<string[]>(["", "", "", ""]);
   const [isLoading, setIsLoading] = useState(false);
   const [resendTimer, setResendTimer] = useState(30);
@@ -23,6 +24,7 @@ export default function VerifyOTPClient() {
     const storedMobile = sessionStorage.getItem("auth_mobile");
     const storedFlow = sessionStorage.getItem("auth_flow");
     const storedRole = sessionStorage.getItem("auth_role") as "store" | "store_owner";
+    const storedDevOtp = sessionStorage.getItem("auth_dev_otp");
     
     if (!storedMobile) {
       router.push("/login");
@@ -32,6 +34,7 @@ export default function VerifyOTPClient() {
     setMobileNumber(storedMobile);
     if (storedFlow) setAuthFlow(storedFlow);
     if (storedRole) setAuthRole(storedRole);
+    if (storedDevOtp) setDevOtp(storedDevOtp);
 
     // Initialize or restore resend timer based on timestamp
     const storedExpiry = sessionStorage.getItem("otp_timer_expiry");
@@ -92,8 +95,9 @@ export default function VerifyOTPClient() {
       
       toast.success("OTP Verified Successfully!");
       
-      // Clear OTP timer and mark as verified in frontend session
+      // Clear OTP timer and dev OTP in frontend session
       sessionStorage.removeItem("otp_timer_expiry");
+      sessionStorage.removeItem("auth_dev_otp");
       sessionStorage.setItem("auth_verified", "true");
       
       if (authFlow === "signup") {
@@ -169,10 +173,16 @@ export default function VerifyOTPClient() {
   const handleResend = async () => {
     try {
       setIsLoading(true);
+      let res;
       if (authRole === "store_owner") {
-        await authApi.ownerResendOTP(mobileNumber);
+        res = await authApi.ownerResendOTP(mobileNumber);
       } else {
-        await authApi.storeResendOTP(mobileNumber);
+        res = await authApi.storeResendOTP(mobileNumber);
+      }
+      const newDevOtp = res?.data?.otp;
+      if (newDevOtp) {
+        setDevOtp(String(newDevOtp));
+        sessionStorage.setItem("auth_dev_otp", String(newDevOtp));
       }
       const newExpiry = Date.now() + 30000;
       sessionStorage.setItem("otp_timer_expiry", newExpiry.toString());
@@ -197,6 +207,21 @@ export default function VerifyOTPClient() {
       subtitle={`Enter the 4-digit code sent to ${maskNumber(mobileNumber)}`}
     >
       <div className="mt-8">
+        {devOtp && (
+          <button
+            type="button"
+            onClick={() => {
+              const digits = devOtp.slice(0, 4).split("");
+              setOtp(digits);
+              handleVerify(devOtp);
+            }}
+            className="mb-6 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#0D9488]/10 hover:bg-[#0D9488]/20 text-[#0D9488] border border-[#0D9488]/30 rounded-xl text-sm font-semibold transition-all cursor-pointer"
+          >
+            <span>Demo OTP: <strong className="tracking-widest font-black text-base">{devOtp}</strong></span>
+            <span className="text-xs bg-[#0D9488] text-white px-2 py-0.5 rounded-md font-bold">Auto-fill</span>
+          </button>
+        )}
+
         <div className="flex justify-center gap-4 mb-8">
           {otp.map((digit, idx) => (
             <input

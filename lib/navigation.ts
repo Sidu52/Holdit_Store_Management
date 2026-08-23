@@ -7,6 +7,7 @@ import {
   Package,
   Inbox,
   Send,
+  Receipt,
   Settings
 } from "lucide-react";
 
@@ -42,16 +43,16 @@ export const NAVIGATION_ITEMS = [
     roles: ["store_owner"]
   },
   {
-    name: "Past Booking",
-    href: "/dashboard/booking_history",
-    icon: History,
-    roles: ["store"]
-  },
-  {
-    name: "Booking Manager",
+    name: "Bookings",
     href: "/dashboard/bookings",
     icon: History,
-    roles: ["store_owner"]
+    roles: ["store_owner", "store"]
+  },
+  {
+    name: "Settlements",
+    href: "/dashboard/settlements",
+    icon: Receipt,
+    roles: ["store_owner", "store"]
   },
   {
     name: "Profile",

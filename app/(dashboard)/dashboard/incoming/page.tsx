@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import useSWR from "swr";
-import { bookingApi } from "../../../../services/bookingApi";
-import IncomingBanner from "../../../../components/atom/IncomingBanner";
-import BookingCard from "../../../../components/models/BookingCard";
-import BookingDetailDrawer from "../../../../components/models/BookingDetailDrawer";
-import { Booking } from "../../../../types/booking";
+import { bookingApi } from "@/services/bookingApi";
+import IncomingBanner from "@/components/atom/IncomingBanner";
+import BookingCard from "@/components/models/BookingCard";
+import BookingDetailDrawer from "@/components/models/BookingDetailDrawer";
+import { Booking } from "@/types/booking";
 
 export default function IncomingBookingsPage() {
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);

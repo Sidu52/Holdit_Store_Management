@@ -22,7 +22,14 @@ export default function SignupClient() {
     
     setIsLoading(true);
     try {
-      await authApi.ownerRegister(mobileNumber);
+      const res = await authApi.ownerRegister(mobileNumber);
+      const receivedOtp = res?.data?.otp;
+      if (receivedOtp) {
+        sessionStorage.setItem("auth_dev_otp", String(receivedOtp));
+      } else {
+        sessionStorage.removeItem("auth_dev_otp");
+      }
+
       // Store mobile number and role in session storage to verify later
       sessionStorage.setItem("auth_mobile", mobileNumber);
       sessionStorage.setItem("auth_flow", "signup");

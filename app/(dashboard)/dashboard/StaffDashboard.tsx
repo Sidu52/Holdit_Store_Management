@@ -7,9 +7,9 @@ import {
   Send
 } from "lucide-react";
 import useSWR from "swr";
-import { bookingApi } from "../../../services/bookingApi";
-import StatusCard from "../../../components/atom/StatusCard";
-import RecentBookingList, { RecentBooking } from "../../../components/atom/RecentBooking";
+import { bookingApi } from "@/services/bookingApi";
+import StatusCard from "@/components/atom/StatusCard";
+import RecentBookingList, { RecentBooking } from "@/components/atom/RecentBooking";
 import { useRouter } from "next/navigation";
 
 export default function StaffDashboard() {

@@ -20,9 +20,8 @@ export async function fetchServerData<T = any>(endpoint: string, options: Reques
   const token = await getServerToken();
   if (!token) return null;
 
-  // Use NEXT_PUBLIC_API_URL directly for server-side fetches (it already includes /api/v1)
   let baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
-  if (!baseURL.includes("/api/v1")) {
+  if (!baseURL.endsWith("/api/v1") && !baseURL.includes("/api/v1")) {
     baseURL = `${baseURL.replace(/\/$/, "")}/api/v1`;
   }
   const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;

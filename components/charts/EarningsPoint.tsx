@@ -48,10 +48,7 @@ export default function EarningsChart({
           <div className="h-full w-full animate-pulse rounded-lg bg-slate-100" />
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={data}
-              margin={{ top: 8, right: 4, left: -20, bottom: 0 }}
-            >
+            <BarChart data={data} margin={{ top: 8, right: 4, left: -20, bottom: 0 }}>
               <CartesianGrid vertical={false} stroke="#eef2f6" />
               <XAxis
                 dataKey="day"
@@ -67,15 +64,8 @@ export default function EarningsChart({
               />
               <Tooltip
                 cursor={{ fill: "rgba(185,139,42,0.08)" }}
-                formatter={(value) => [
-                  `${currency}${(value ?? 0).toLocaleString()}`,
-                  "Earnings",
-                ]}
-                contentStyle={{
-                  fontSize: 12,
-                  borderRadius: 8,
-                  border: "1px solid #e2e8f0",
-                }}
+                formatter={(value: any) => [`${currency}${Number(value || 0).toLocaleString()}`, "Earnings"]}
+                contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e2e8f0" }}
               />
               <Bar dataKey="amount" fill={barColor} radius={[4, 4, 0, 0]} />
             </BarChart>

@@ -21,8 +21,14 @@ export const bookingApi = {
   },
   
   // GET BOOKING HISTORY
-  getBookingHistory: async (page = 1, limit = 10) => {
-    const res = await apiClient.get(`/store/bookings/history?page=${page}&limit=${limit}`);
+  getBookingHistory: async (page = 1, limit = 10, params?: Record<string, any>) => {
+    const query = new URLSearchParams({
+      page: String(page),
+      limit: String(limit),
+      only_stored_cancelled: "true",
+      ...(params || {})
+    }).toString();
+    const res = await apiClient.get(`/store/bookings/history?${query}`);
     return res.data;
   },
   
@@ -31,10 +37,44 @@ export const bookingApi = {
     const res = await apiClient.get(`/store/bookings/${bookingId}`);
     return res.data;
   },
+
+  // GET STORE OWNER ALL BOOKINGS
+  getOwnerBookings: async (params?: Record<string, any>) => {
+    try {
+      const res = await apiClient.get("/store-owner/bookings", { 
+        params: { 
+          only_stored_cancelled: true,
+          ...params 
+        } 
+      });
+      return res.data;
+    } catch {
+      // Fallback
+      const res = await apiClient.get("/store/bookings/history?only_stored_cancelled=true");
+      return res.data;
+    }
+  },
+
+  // GET STORE OWNER BOOKING DETAIL BY ID
+  getOwnerBookingDetail: async (bookingId: string) => {
+    try {
+      const res = await apiClient.get(`/store-owner/bookings/${bookingId}`);
+      return res.data;
+    } catch {
+      const res = await apiClient.get(`/store/bookings/${bookingId}`);
+      return res.data;
+    }
+  },
+
+  // STORE EARNING SETTLEMENT DATA
+  getBookingSettlement: async (bookingId: string) => {
+    const res = await apiClient.get(`/store/bookings/${bookingId}/settlement`);
+    return res.data;
+  },
   
-  // GET BOOKING RECEIVED
-  confirmStored: async (bookingId: string, otp: string) => {
-    const res = await apiClient.post(`/store/bookings/${bookingId}/confirm-stored`, { otp });
+  // GET BOOKING RECEIVED (1-click direct confirmation)
+  confirmStored: async (bookingId: string, notes?: string) => {
+    const res = await apiClient.post(`/store/bookings/${bookingId}/confirm-stored`, { notes });
     return res.data;
   },
   

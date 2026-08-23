@@ -15,9 +15,6 @@ const redirect = (url: string, request: NextRequest) =>
 export function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const token = request.cookies.get("accessToken")?.value;
-  const hasSession = request.cookies.get("hasSession")?.value;
-  const isAuthenticated = token || hasSession;
-
   const isPublicRoute =
     publicPaths.includes(path) ||
     loginVerificationRegex.test(path) ||
@@ -25,7 +22,7 @@ export function middleware(request: NextRequest) {
     (path === "/qr-code-generator" &&
       process.env.NEXT_PUBLIC_ENV_TYPE === "production");
 
-  if (isAuthenticated) {
+  if (token) {
     // Prevent access to login/signup/verify after login
     if (
       path === "/" ||

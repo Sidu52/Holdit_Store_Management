@@ -23,12 +23,20 @@ export default function LoginClient() {
     
     setIsLoading(true);
     try {
+      let res;
       if (role === "store_owner") {
-        await authApi.ownerLogin(mobileNumber);
+        res = await authApi.ownerLogin(mobileNumber);
       } else {
-        await authApi.storeLogin(mobileNumber);
+        res = await authApi.storeLogin(mobileNumber);
       }
       
+      const receivedOtp = res?.data?.otp;
+      if (receivedOtp) {
+        sessionStorage.setItem("auth_dev_otp", String(receivedOtp));
+      } else {
+        sessionStorage.removeItem("auth_dev_otp");
+      }
+
       // Store info across steps
       sessionStorage.setItem("auth_mobile", mobileNumber);
       sessionStorage.setItem("auth_flow", "login");

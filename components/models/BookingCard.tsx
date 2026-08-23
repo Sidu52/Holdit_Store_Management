@@ -1,12 +1,43 @@
 import { Booking } from "@/types/booking";
 import { driverName, formatTime, getStatusMeta } from "@/types/Bookingdisplay";
-import { User, Package, Truck, ChevronRight, Clock } from "lucide-react";
-import { useMemo } from "react";
-
+import { User, Package, Truck, ChevronRight, Clock, Timer } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
 
 interface BookingCardProps {
   booking: Booking;
   onClick: (bookingId: string) => void;
+}
+
+function useStorageDuration(storedAt?: string, releasedAt?: string) {
+  const [now, setNow] = useState<number>(() => Date.now());
+
+  useEffect(() => {
+    if (!storedAt || releasedAt) return;
+    const interval = setInterval(() => {
+      setNow(Date.now());
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [storedAt, releasedAt]);
+
+  if (!storedAt) return null;
+
+  const start = new Date(storedAt).getTime();
+  if (Number.isNaN(start)) return null;
+  const end = releasedAt ? new Date(releasedAt).getTime() : now;
+  const diffMs = Math.max(0, end - start);
+
+  const totalMinutes = Math.floor(diffMs / (1000 * 60));
+  const days = Math.floor(totalMinutes / (60 * 24));
+  const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
+  const minutes = totalMinutes % 60;
+
+  if (days > 0) {
+    return `${days}d ${hours}h ${minutes}m`;
+  }
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+  return `${Math.max(1, minutes)}m`;
 }
 
 export default function BookingCard({ booking, onClick }: BookingCardProps) {
@@ -15,7 +46,9 @@ export default function BookingCard({ booking, onClick }: BookingCardProps) {
   const dName = driverName(assignment?.driverId);
   const luggageCount = useMemo(() => booking.luggage?.totalCount ?? 0, [booking.luggage]);
   
-  console.log("booking", booking);
+  const storedStartTime = booking.storage?.storedAt || (booking.status === "stored" ? (booking as any).updatedAt : undefined);
+  const storageDuration = useStorageDuration(storedStartTime, booking.storage?.releasedAt);
+  const isInVault = booking.status === "stored";
 
   return (
     <button
@@ -23,10 +56,10 @@ export default function BookingCard({ booking, onClick }: BookingCardProps) {
       onClick={() => onClick(booking._id)}
       className="group flex w-full flex-col rounded-xl border border-slate-200 bg-white text-left transition-all hover:border-slate-300 hover:shadow-md"
     >
-      {/* Header */}
+      {/* Header: Left ID & Status, Right Timer & Chevron */}
       <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3">
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-sm font-semibold text-slate-800">
+        <div className="flex items-center gap-2.5">
+          <span className="font-mono text-sm font-bold text-slate-800">
             {booking.bookingCode}
           </span>
           <span
@@ -36,10 +69,23 @@ export default function BookingCard({ booking, onClick }: BookingCardProps) {
             {status.label}
           </span>
         </div>
-        <ChevronRight
-          size={18}
-          className="text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-slate-500"
-        />
+
+        <div className="flex items-center gap-3">
+          {storageDuration && (
+            <div className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold shadow-xs ${
+              isInVault
+                ? "bg-teal-50 text-teal-700 border border-teal-200"
+                : "bg-slate-100 text-slate-700 border border-slate-200"
+            }`}>
+              <Timer size={13} className={isInVault ? "animate-pulse text-teal-600" : "text-slate-500"} />
+              <span>{isInVault ? `In Vault: ${storageDuration}` : `Stored: ${storageDuration}`}</span>
+            </div>
+          )}
+          <ChevronRight
+            size={18}
+            className="text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-slate-500"
+          />
+        </div>
       </div>
 
       {/* 3-section body */}

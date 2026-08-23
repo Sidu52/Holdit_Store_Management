@@ -20,8 +20,8 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
           </div>
 
           <h1 className="text-4xl lg:text-5xl font-bold leading-tight max-w-sm text-slate-800">
-            Grow with <br />
-            <span className="text-[#0D9488]">Holdit</span>
+            Unlock Your <br />
+            <span className="text-[#0D9488]">Team Performance</span>
           </h1>
         </div>
 

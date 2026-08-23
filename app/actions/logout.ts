@@ -31,7 +31,6 @@ export async function serverLogout(role: string) {
   // Delete cookies from the client browser
   cookieStore.delete("accessToken");
   cookieStore.delete("refreshToken");
-  cookieStore.delete("hasSession");
 
   return { success: true };
 }

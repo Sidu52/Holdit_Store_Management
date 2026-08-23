@@ -46,7 +46,7 @@ export default function BookingMixChart({
                 ))}
               </Pie>
               <Tooltip
-                formatter={(value, name) => [value ?? 0, String(name)]}
+                formatter={(value: any, name: any) => [value, name]}
                 contentStyle={{
                   fontSize: 12,
                   borderRadius: 8,
@@ -60,10 +60,7 @@ export default function BookingMixChart({
 
       <div className="mt-3 flex flex-wrap gap-3">
         {data.map((slice, i) => (
-          <div
-            key={i}
-            className="flex items-center gap-1.5 text-xs text-slate-500"
-          >
+          <div key={i} className="flex items-center gap-1.5 text-xs text-slate-500">
             <span
               className="h-2 w-2 rounded-sm"
               style={{ backgroundColor: slice.color }}
