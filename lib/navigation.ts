@@ -52,7 +52,7 @@ export const NAVIGATION_ITEMS = [
     name: "Settlements",
     href: "/dashboard/settlements",
     icon: Receipt,
-    roles: ["store_owner", "store"]
+    roles: ["store_owner"]
   },
   {
     name: "Profile",

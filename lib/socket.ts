@@ -14,13 +14,10 @@ export const socket: Socket = io(SOCKET_URL, {
   transports: ["websocket"],
   auth: (cb) => {
     // Read accessToken from cookies for server-side auth
-    const token =
-      typeof document !== "undefined"
-        ? document.cookie
-            .split("; ")
-            .find((c) => c.startsWith("accessToken="))
-            ?.split("=")[1] || ""
-        : "";
+    const cookiesList = typeof document !== "undefined" ? document.cookie.split("; ") : [];
+    const storeToken = cookiesList.find((c) => c.startsWith("store_accessToken="))?.split("=")[1];
+    const defaultToken = cookiesList.find((c) => c.startsWith("accessToken="))?.split("=")[1];
+    const token = storeToken || defaultToken || "";
     cb({ token: token ? `Bearer ${token}` : "" });
   },
 });

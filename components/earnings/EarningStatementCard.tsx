@@ -71,9 +71,9 @@ export default function EarningStatementCard({
   }
 
   const status = settlement.earningStatus || "PENDING";
-  const isPending = status === "PENDING";
-  const isProvisional = status === "ELIGIBLE" || status === "PAYABLE";
   const isPaid = status === "PAID";
+  const isPending = !isPaid && !settlement.isDownloadable;
+  const isProvisional = !isPaid && settlement.isDownloadable;
 
   const startedAtStr = settlement.storagePeriod.startedAt
     ? new Date(settlement.storagePeriod.startedAt).toLocaleString("en-IN", {
@@ -204,25 +204,15 @@ export default function EarningStatementCard({
               </td>
               <td className="py-3.5 px-4 text-right">{settlement.storagePeriod.billableHours} hrs</td>
               <td className="py-3.5 px-4 text-right">₹{settlement.rates.storeStorageHourlyRate}/hr</td>
-              <td className="py-3.5 px-4 text-right font-bold text-slate-900">
-                ₹{settlement.financials.grossStoreAmount.toFixed(2)}
+              <td className="py-3.5 px-4 text-right font-bold text-teal-800">
+                ₹{settlement.financials.netStorePayout.toFixed(2)}
               </td>
             </tr>
-            {settlement.financials.commissionDeduction > 0 && (
-              <tr className="text-slate-500">
-                <td className="py-3 px-4">Platform Service Fee Deduction</td>
-                <td className="py-3 px-4 text-right">—</td>
-                <td className="py-3 px-4 text-right">—</td>
-                <td className="py-3 px-4 text-right text-rose-600 font-bold">
-                  -₹{settlement.financials.commissionDeduction.toFixed(2)}
-                </td>
-              </tr>
-            )}
           </tbody>
           <tfoot className="bg-slate-50 font-bold border-t border-slate-200">
             <tr>
               <td colSpan={3} className="py-3.5 px-4 text-right text-slate-600 uppercase tracking-wider text-[11px]">
-                Net Store Payout:
+                Total Store Payout:
               </td>
               <td className="py-3.5 px-4 text-right text-base font-black text-teal-800">
                 ₹{settlement.financials.netStorePayout.toFixed(2)}
@@ -261,7 +251,7 @@ export default function EarningStatementCard({
         <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center gap-3 text-slate-600 text-xs font-medium">
           <Clock size={18} className="text-slate-500 shrink-0" />
           <span>
-            Storage is currently active. Final billable hours and gross earnings will be calculated once luggage is physically released to the driver.
+            Storage is currently active. Final billable hours and store payout will be calculated once luggage is physically released to the driver.
           </span>
         </div>
       )}

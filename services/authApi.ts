@@ -49,8 +49,20 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Call backend POST /refresh to issue new tokens (cookies stored automatically)
-        await apiClient.post("/refresh");
+        let refreshUrl = "/store/auth/refresh";
+        if (typeof window !== "undefined") {
+          const role = sessionStorage.getItem("auth_role");
+          if (role === "store_owner") {
+            refreshUrl = "/store-owner/auth/refresh";
+          }
+        }
+        try {
+          await apiClient.post(refreshUrl);
+        } catch {
+          // Fallback to alternate store partner refresh endpoint
+          const fallbackUrl = refreshUrl === "/store/auth/refresh" ? "/store-owner/auth/refresh" : "/store/auth/refresh";
+          await apiClient.post(fallbackUrl);
+        }
         processQueue(null);
         return apiClient(originalRequest);
       } catch (refreshError) {
@@ -99,6 +111,14 @@ export const authApi = {
   },
   ownerResendOTP: async (phone: string) => {
     const res = await apiClient.post("/store-owner/auth/resend", { phone });
+    return res.data;
+  },
+  completeProfile: async (data: any) => {
+    const res = await apiClient.post("/store-owner/complete-profile", data);
+    return res.data;
+  },
+  getOwnerProfile: async () => {
+    const res = await apiClient.get("/store-owner/profile");
     return res.data;
   },
 

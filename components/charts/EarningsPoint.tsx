@@ -37,7 +37,7 @@ export default function EarningsChart({
         <div className="text-right">
           <div className="font-mono text-lg font-bold text-slate-900">
             {currency}
-            {total.toLocaleString()}
+            {total.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
           <div className="text-xs text-slate-400">this period</div>
         </div>
@@ -64,7 +64,7 @@ export default function EarningsChart({
               />
               <Tooltip
                 cursor={{ fill: "rgba(185,139,42,0.08)" }}
-                formatter={(value: any) => [`${currency}${Number(value || 0).toLocaleString()}`, "Earnings"]}
+                formatter={(value: any) => [`${currency}${Number(value || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, "Earnings"]}
                 contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e2e8f0" }}
               />
               <Bar dataKey="amount" fill={barColor} radius={[4, 4, 0, 0]} />

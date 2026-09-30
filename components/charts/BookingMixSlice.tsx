@@ -29,6 +29,11 @@ export default function BookingMixChart({
       <div className="h-52">
         {loading ? (
           <div className="h-full w-full animate-pulse rounded-lg bg-slate-100" />
+        ) : total === 0 ? (
+          <div className="flex h-full flex-col items-center justify-center text-center">
+            <p className="text-sm font-medium text-slate-400">No booking breakdown yet</p>
+            <p className="text-xs text-slate-400 mt-1">Mix will populate automatically as bookings arrive</p>
+          </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>

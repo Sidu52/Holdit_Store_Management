@@ -27,25 +27,50 @@ export default function SettlementStatementCard({
     }
   };
 
+  const currencySymbol = "₹";
+
   return (
     <div className={`bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm space-y-4 ${className}`}>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-teal-50 text-teal-700 flex items-center justify-center font-bold">
+          <div className="w-11 h-11 rounded-2xl bg-teal-50 text-teal-700 flex items-center justify-center font-bold shrink-0">
             <Calendar size={22} />
           </div>
           <div>
-            <h3 className="text-base font-black text-slate-800">{settlement.periodLabel}</h3>
-            <p className="text-xs text-slate-400 font-medium">
-              Period ID: <span className="font-mono font-bold text-slate-600">{settlement.periodId}</span> • {settlement.earningsCount} Settled Orders
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-base font-black text-slate-800">{settlement.periodLabel}</h3>
+              {settlement.status === "SETTLED" ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <CheckCircle2 size={11} /> Settled
+                </span>
+              ) : settlement.status === "IN_PROGRESS" ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
+                  ⏳ In Progress
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">
+                  Upcoming
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-slate-400 font-medium mt-0.5">
+              Period ID: <span className="font-mono font-bold text-slate-600">{settlement.periodId}</span> • {settlement.earningsCount} {settlement.status === "SETTLED" ? "Settled" : "Accrued"} Orders
             </p>
+            {settlement.transferRef && (
+              <p className="text-[11px] font-bold text-emerald-700 mt-1">
+                ✓ Bank Transfer Ref: <span className="font-mono">{settlement.transferRef}</span>
+                {settlement.settledAt ? ` • Settled on ${new Date(settlement.settledAt).toLocaleDateString("en-IN")}` : ""}
+              </p>
+            )}
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="text-right pr-2">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Consolidated Payout</p>
-            <p className="text-xl font-black text-teal-800">₹{settlement.totalNetPayout.toFixed(2)}</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              {settlement.status === "SETTLED" ? "Settled Payout" : "Accrued Earning"}
+            </p>
+            <p className="text-xl font-black text-teal-800">{currencySymbol}{settlement.totalNetPayout.toFixed(2)}</p>
           </div>
 
           <button
@@ -88,8 +113,7 @@ export default function SettlementStatementCard({
                 <tr>
                   <th className="py-2.5 px-3">Booking Code</th>
                   <th className="py-2.5 px-3">Storage Date</th>
-                  <th className="py-2.5 px-3 text-right">Gross Earning</th>
-                  <th className="py-2.5 px-3 text-right">Net Payout</th>
+                  <th className="py-2.5 px-3 text-right">Store Payout</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
@@ -99,8 +123,7 @@ export default function SettlementStatementCard({
                     <td className="py-2.5 px-3">
                       {e.startedAt ? new Date(e.startedAt).toLocaleDateString() : "—"}
                     </td>
-                    <td className="py-2.5 px-3 text-right">₹{e.grossEarning.toFixed(2)}</td>
-                    <td className="py-2.5 px-3 text-right font-bold text-teal-800">₹{e.netEarning.toFixed(2)}</td>
+                    <td className="py-2.5 px-3 text-right font-bold text-teal-800">{currencySymbol}{e.netEarning.toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>

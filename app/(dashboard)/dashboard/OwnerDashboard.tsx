@@ -17,8 +17,12 @@ export default function OwnerDashboard() {
     revenue: 0,
     activeVault: 0,
     locations: 0,
-    growth: "0%"
+    growth: "0%",
+    currency: "INR",
+    currencySymbol: "₹",
   };
+
+  const currencySymbol = summary.currencySymbol || (summary.currency === "USD" ? "$" : (summary.currency === "EUR" ? "€" : "₹"));
 
   const recentBookingsRaw = dashboardData.recentBookings || [];
 
@@ -26,7 +30,9 @@ export default function OwnerDashboard() {
   const formattedRecentBookings: RecentBooking[] = recentBookingsRaw.map((b: any) => {
     const clientName = b.userInfo?.firstName
       ? `${b.userInfo.firstName} ${b.userInfo.lastName || ""}`.trim()
-      : "Guest User";
+      : b.userId?.first_name
+      ? `${b.userId.first_name} ${b.userId.last_name || ""}`.trim()
+      : b.customer?.name || "Guest User";
 
     const dateStr = b.updatedAt || b.createdAt;
     const formattedDate = dateStr
@@ -55,27 +61,16 @@ export default function OwnerDashboard() {
   // Prepare chart data for EarningsChart & BookingMixChart
   const charts = dashboardData.charts || {};
   
-  // Transform or fallback earnings chart data (Bar chart)
-  const earningsData: EarningsPoint[] = Array.isArray(charts.weeklyEarnings)
+  // Real daily earnings from backend or 0 for inactive days (Zero Hardcoded Values)
+  const defaultWeekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const earningsData: EarningsPoint[] = Array.isArray(charts.weeklyEarnings) && charts.weeklyEarnings.length > 0
     ? charts.weeklyEarnings
-    : [
-        { day: "Mon", amount: Number(summary.revenue) * 0.1 || 1200 },
-        { day: "Tue", amount: Number(summary.revenue) * 0.15 || 1800 },
-        { day: "Wed", amount: Number(summary.revenue) * 0.12 || 1400 },
-        { day: "Thu", amount: Number(summary.revenue) * 0.18 || 2200 },
-        { day: "Fri", amount: Number(summary.revenue) * 0.2 || 2500 },
-        { day: "Sat", amount: Number(summary.revenue) * 0.15 || 1900 },
-        { day: "Sun", amount: Number(summary.revenue) * 0.1 || 1300 },
-      ];
+    : defaultWeekDays.map((day) => ({ day, amount: 0 }));
 
-  // Transform or fallback booking mix pie chart data
+  // Real booking mix from luggage segment breakdown (Zero Hardcoded Values)
   const bookingMixData: BookingMixSlice[] = Array.isArray(charts.bookingMix)
     ? charts.bookingMix
-    : [
-        { name: "Luggage Storage", value: 65, color: "#0D9488" },
-        { name: "Insurance", value: 20, color: "#6366F1" },
-        { name: "Courier Service", value: 15, color: "#F59E0B" },
-      ];
+    : [];
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -90,7 +85,7 @@ export default function OwnerDashboard() {
         <StatusCard
           icon={DollarSign}
           title="Revenue"
-          value={`₹${Number(summary.revenue).toLocaleString("en-IN")}`}
+          value={`${currencySymbol}${Number(summary.revenue || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           color="teal"
         />
         <StatusCard
@@ -118,7 +113,7 @@ export default function OwnerDashboard() {
         <EarningsChart
           data={earningsData}
           title="Weekly Revenue Overview"
-          currency="₹"
+          currency={currencySymbol}
           loading={isLoading}
           barColor="#0D9488"
         />

@@ -6,7 +6,10 @@ import { cookies } from "next/headers";
 export async function getServerToken(): Promise<string | undefined> {
   try {
     const cookieStore = await cookies();
-    return cookieStore.get("accessToken")?.value;
+    return (
+      cookieStore.get("store_accessToken")?.value ||
+      cookieStore.get("accessToken")?.value
+    );
   } catch (error) {
     console.error("Error reading cookies on server:", error);
     return undefined;
@@ -53,9 +56,16 @@ export async function fetchServerData<T = any>(endpoint: string, options: Reques
 
 /**
  * Specific server helper to fetch the authenticated user profile.
+ * Strictly enforces that the caller has a store or store_owner role.
  */
 export async function getServerUser() {
   const res = await fetchServerData("/me");
-  // The backend wraps data inside { success: true, data: user }
-  return res?.data || null;
+  const user = res?.data || null;
+
+  // Enforce strict role boundary: customer/driver tokens must not authenticate into store portal
+  if (user && user.role !== "store" && user.role !== "store_owner") {
+    return null;
+  }
+
+  return user;
 }

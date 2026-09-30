@@ -8,7 +8,9 @@ import { cookies } from "next/headers";
  */
 export async function serverLogout(role: string) {
   const cookieStore = await cookies();
-  const token = cookieStore.get("accessToken")?.value;
+  const token =
+    cookieStore.get("store_accessToken")?.value ||
+    cookieStore.get("accessToken")?.value;
   
   if (token) {
     const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
@@ -31,6 +33,9 @@ export async function serverLogout(role: string) {
   // Delete cookies from the client browser
   cookieStore.delete("accessToken");
   cookieStore.delete("refreshToken");
+  cookieStore.delete("store_accessToken");
+  cookieStore.delete("store_refreshToken");
+  cookieStore.delete("store_hasSession");
 
   return { success: true };
 }
