@@ -1,5 +1,7 @@
 export const fetcher = async (url: string, options: RequestInit = {}) => {
-  const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+  const baseURL = typeof window === "undefined" && process.env.BACKEND_URL
+    ? `${process.env.BACKEND_URL.replace(/\/$/, "")}/api/v1`
+    : (process.env.NEXT_PUBLIC_API_URL || "/api/v1");
   
   // Clean url if it starts with a slash
   const endpoint = url.startsWith('/') ? url : `/${url}`;

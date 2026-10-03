@@ -23,7 +23,11 @@ export async function fetchServerData<T = any>(endpoint: string, options: Reques
   const token = await getServerToken();
   if (!token) return null;
 
-  let baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+  let baseURL = process.env.BACKEND_URL
+    ? `${process.env.BACKEND_URL.replace(/\/$/, "")}/api/v1`
+    : (process.env.NEXT_PUBLIC_API_URL?.startsWith("http")
+        ? process.env.NEXT_PUBLIC_API_URL
+        : "http://localhost:5000/api/v1");
   if (!baseURL.endsWith("/api/v1") && !baseURL.includes("/api/v1")) {
     baseURL = `${baseURL.replace(/\/$/, "")}/api/v1`;
   }
